@@ -4,7 +4,6 @@
 # | Solving the quantum many-body problem with artificial neural-networks     |
 # |___________________________________________________________________________|
 
-import numpy as np
 import pickle
 
 from nqslearn import Ising1D
@@ -18,7 +17,7 @@ def main():
     # create a Neural Quantum State (NQS)
     nqs = NQS()
     # Metropolis-Hastings sampler parameters
-    sampler_params = {'n_sweeps': 500, 'therm_factor': 0.,
+    sampler_params = {'n_sweeps': 1000, 'therm_factor': 0.,
                       'sweep_factor': 1, 'n_flips': 1}
     # create stochastic-reconfiguration optimizer
     optimizer = SRoptimizer(nqs, H, sampler_params=sampler_params,

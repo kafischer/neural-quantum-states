@@ -27,6 +27,7 @@
 import numpy as np
 from .hamiltonian import Hamiltonian
 
+
 class Ising1D(Hamiltonian):
     """
     Class represents the Hamiltonian of the 1D ising model with
