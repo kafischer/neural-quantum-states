@@ -30,18 +30,28 @@ import numpy as np
 class NQS(object):
     """Represents a quantum state using a restricted Boltzmann machine."""
 
-    def __init__(self,
-                 a=0.001*(np.random.rand(40, 1)-0.5),
-                 b=0.001*(np.random.rand(40, 1)-0.5),
-                 W=0.001*(np.random.rand(40, 40)-0.5),
-                 n_hidden=40,
-                 n_visible=40):
+    def __init__(self, a=None, b=None, W=None,
+                 n_hidden=40, n_visible=40, init_weight=0.001):
         """
         Initialize a state by entering a,b,W (np arrays) and dimensions (ints)
         """
-        self.a = a.astype(dtype=complex)
-        self.b = b.astype(dtype=complex)
-        self.W = W.astype(dtype=complex)
+
+        if a:
+            self.a = a.astype(dtype=complex)
+        else:
+            self.a = init_weight * (np.random.rand(n_visible, 1)-0.5)
+        if b:
+            self.b = b.astype(dtype=complex)
+        else:
+            self.b = init_weight * (np.random.rand(n_visible, 1) - 0.5)
+        if W:
+            self.W = W
+        else:
+            self.W = init_weight * (np.random.rand(n_visible, n_hidden)-0.5)
+
+        self.a = self.a.astype(dtype=complex)
+        self.b = self.b.astype(dtype=complex)
+        self.W = self.W.astype(dtype=complex)
         self.n_hidden = n_hidden
         self.n_visible = n_visible
         self.thetas = b  # will become b + W*state

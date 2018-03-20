@@ -16,10 +16,10 @@ class SRoptimizer(object):
     Optimizes the parameters of a neural quantum state (NQS) with respect to
     a Hamiltonian.
     """
-    def __init__(self, nqs, ham, base_learning_rate=0.5e-2,
+    def __init__(self, nqs, ham, learning_rate=0.5e-2,
                  sampler_params=None):
         if not sampler_params:
-            sampler_params = {'n_sweeps': 10000, 'therm_factor': 0.1,
+            sampler_params = {'n_sweeps': 10000, 'therm_factor': 0.,
                               'sweep_factor': 1, 'n_flips': None}
         self.nqs = nqs
         self.ham = ham
@@ -27,13 +27,20 @@ class SRoptimizer(object):
         self.therm_factor = sampler_params['therm_factor']
         self.sweep_factor = sampler_params['sweep_factor']
         self.n_flips = sampler_params['n_flips']
-        self.base_learning_rate = base_learning_rate
+        self.learning_rate = learning_rate
         self.loss = []
         self.error = []
         data_dir = './data_' + str(time.time()).split('.')[0] + '/'
         self.data_dir = data_dir
         if not os.path.exists(self.data_dir):
             os.makedirs(self.data_dir)
+        with open(self.data_dir+'hamiltonian.pkl', 'wb') as f:
+            pickle.dump(ham, f)
+        np.savetxt(self.data_dir+'learning_rate.txt',
+                   np.array([learning_rate]))
+        print('Optimizing the Hamiltonian:', ham)
+        print('Sampler parameters:', sampler_params)
+        print('Learning rate:', learning_rate)
 
     def run(self, num_epochs):
         initial_state = None
@@ -46,7 +53,7 @@ class SRoptimizer(object):
             sampler.run(self.n_sweeps, self.therm_factor, self.sweep_factor,
                         self.n_flips)
             update_vals, _ = self.compute_sr_gradients(sampler, p+1)
-            self.nqs.update_params(self.base_learning_rate*update_vals)
+            self.nqs.update_params(self.learning_rate*update_vals)
 
             if p > 1:
                 # keep track of some stuff
@@ -56,6 +63,8 @@ class SRoptimizer(object):
                            np.squeeze(np.array(self.error)))
                 with open(self.data_dir+'NQS_'+str(p)+'.pkl', 'wb') as f:
                     pickle.dump(self.nqs, f)
+                with open(self.data_dir+'sampler.pkl', 'wb') as f:
+                    pickle.dump(sampler, f)
 
     def compute_sr_gradients(self, sampler, p):
         """
@@ -82,7 +91,7 @@ class SRoptimizer(object):
         """Computes variational derivatives and update to params"""
         theta = np.dot(weights.transpose(),
                        sigmas.transpose()) + B  # n_h x N_s
-        dA = sigmas.transpose()  # n_spins x N_s # factor of 1/2 discrepancy?
+        dA = sigmas.transpose()  # n_spins x N_s
         dB = np.tanh(theta)  # n_h x N_s
         dW = sigmas.transpose().reshape((n_spins, 1, N_s)) * \
              np.tanh(theta.reshape((1, n_h, N_s)))
