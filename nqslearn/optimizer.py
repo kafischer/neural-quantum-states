@@ -34,6 +34,8 @@ class SRoptimizer(object):
         self.data_dir = data_dir
         if not os.path.exists(self.data_dir):
             os.makedirs(self.data_dir)
+        with open(self.data_dir+'sampler_params.pkl', 'wb') as f:
+            pickle.dump(sampler_params, f)
         with open(self.data_dir+'hamiltonian.pkl', 'wb') as f:
             pickle.dump(ham, f)
         np.savetxt(self.data_dir+'learning_rate.txt',
@@ -63,7 +65,7 @@ class SRoptimizer(object):
                            np.squeeze(np.array(self.error)))
                 with open(self.data_dir+'NQS_'+str(p)+'.pkl', 'wb') as f:
                     pickle.dump(self.nqs, f)
-                with open(self.data_dir+'sampler.pkl', 'wb') as f:
+                with open(self.data_dir+'sampler_'+str(p)+'.pkl', 'wb') as f:
                     pickle.dump(sampler, f)
 
     def compute_sr_gradients(self, sampler, p):
